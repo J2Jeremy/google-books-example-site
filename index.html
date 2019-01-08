@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>google books api test</title>
+  <meta name="description" content="">
+  <meta name="james bertram" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <!--link href="https://fonts.googleapis.com/css?family=Raleway=Raleway:400,300,600" rel="stylesheet"-->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+  <style>
+    .columns{
+      flex-wrap:wrap;
+    }
+    .column{
+      padding: .75rem .75rem 2rem .75rem;
+      vertical-align: top;
+    }
+    .is-2{
+        display:inline-block;
+        width:90%;   
+        cursor: pointer;  
+    }
+    @media only screen and (max-width: 520px) {
+      .is-2{
+        width: 90%;
+      }
+      .bookContent img{
+        margin:0 auto;
+        display:block;
+      }
+    }
+    @media all and (max-width: 768px) and (min-width: 520px) {
+      .is-2{
+        width: 30%;
+      }
+      .columns{
+        margin:0;
+      }
+      .bookContent{
+        margin:0 auto;
+      }
+    }
+    .bookContent{
+      margin:0 auto;
+    }
+
+    .bTitle{
+      font-weight:600;
+      color:#111111;
+      padding:10px 0 0 0;
+      margin:0;
+      font-size:1rem;
+    }
+    .author{
+      font-weight:300;
+      color:#3e3e3e;
+      padding:10px 0 0 0;
+      margin:0;
+    }
+    .bookContent{
+      width:80%;
+    }
+    .bookCover{
+      max-width:120px;
+    }
+    .hide{
+      visibility: hidden;
+      display:none !important;
+    }
+    .btn{
+      display: block;
+      margin: 2em auto;
+      cursor: pointer;
+      padding: 4px;
+      width: 100px;
+    }
+    h3{
+      padding:10px;
+    }
+    .modal{
+      /* want div to be center screen no matter where element exist in html */
+      position:fixed;
+      z-index: 5;
+      background-color:rgba(255,255,255,.94);
+      top:0;
+      bottom:0;
+      left:0;
+      right:0;
+      opacity:1;
+      display:block;
+      visibility: hidden;
+      transform:scale(1.2);
+      transition:all .25s ease-out;
+    }
+    .modal__inner{
+      position:absolute; /* abs position will try to shrink wrap the size */
+      width:80%;
+      max-width:800px;
+      background-color:#cccccc;
+      left:28%;
+      top:50%;
+      padding:10px;
+      transform:translateY(-50%);
+    }
+    .modal__inner h2{
+      font-size:1.5rem;
+    }
+    .modal__close{
+      position:absolute;
+      top:15px;
+      right:15px;
+      font-size:2rem;
+      transform:scaleX(1.4);
+      color:#111;
+      transform-origin:100%, 0; /* set to top right so its scales toward the screen on larger screens */
+      cursor: pointer;
+    }
+    .modal--is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform:scale(1);
+    }
+    .modal__inner > div.hide{
+      display:block !important;
+      visibility: visible !important;
+    }
+  </style>
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <!--link rel="stylesheet" href="css/normalize.css"-->
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  
+    <div class="container">
+      <h3>Books A-M</h3>
+      <div class="columns" id="booksAM"></div>
+      <input class="btn button is-primary" id="moreBooksAM" type="button" value="show more" />
+
+      <h3>Books N-Z</h3>
+      <div class="columns" id="booksNZ"></div>
+      <input class="btn button is-primary" id="moreBooksNZ" type="button" value="show more" />
+
+    <div class="modal">
+      
+      <div class="modal__inner">
+      </div>
+      <div class="modal__close">X</div>
+    </div>
+  </div> 
+    <script>
+      function truncateString(str, num) {
+        if (str.length > num)
+          return str.slice(0, num > 3 ? num-3 : num) + '...';
+          return str;
+        }
+      function truncateArray(arr){
+        if (arr.length > 1){
+          return arr[0] + "...";
+        }
+        return arr;
+      }
+      function showMoreBtn(){
+         $("#moreBooksAM").click(function(){
+          $(".toggledBooksAM").toggleClass("hide");
+          if(this.value == "show more"){
+            return this.value = "show less";
+          }else{
+            return this.value = "show more";
+          }
+        });
+
+         $("#moreBooksNZ").click(function(){
+          $(".toggledBooksNZ").toggleClass("hide");
+          if(this.value == "show more"){
+            return this.value = "show less";
+          }else{
+            return this.value = "show more";
+          }
+        });
+      }
+      
+
+      function handleResponse(response) {
+        console.log(response.items[0]);
+      var bookResults = [];
+      for (var i = 0; i < response.items.length; i++) {
+        var item = response.items[i];
+        var title = item.volumeInfo.title;
+        var authors = item.volumeInfo.authors;
+        var img = '<img class="bookCover" src="'+item.volumeInfo.imageLinks.smallThumbnail+'" width="80%" height="auto"/>';
+        var desc = item.volumeInfo.description;
+        var retailPrice;
+        var currency;
+        if(!item.saleInfo.retailPrice)
+          {
+            retailPrice = "Price unavailable";
+            currency = "";
+          } else {
+            retailPrice = item.saleInfo.retailPrice.amount;
+            currency = item.saleInfo.retailPrice.currencyCode;
+          }
+        if(desc){
+          desc = truncateString(desc, 200);
+        }
+        var metaInfo ='<h2>Book meta data</h2><ul class="metaList">'
+          +'<li>Title: ' + title + '</li>'
+          +'<li>Subtitle: ' + item.volumeInfo.subtitle + '</li>'
+          +'<li>Author(s): ' + authors + '</li>'
+          +'<li>Publisher, Date' + item.volumeInfo.publisher + ', ' + item.volumeInfo.publishedDate + '</li>'
+          +'<li>Description: ' + desc + '</li>'
+          +'<li>Page count: ' + item.volumeInfo.pageCount + '</li>'
+          +'<li>Category: ' + item.volumeInfo.categories + '</li>'
+          +'<li>Maturity rating: ' + item.volumeInfo.maturityRating + '</li>'
+          +'<li>Language: ' + item.volumeInfo.language + '</li>'
+          +'<li>Retail price: ' + retailPrice + currency + '</li>'
+          +'<li>Purchase link: ' + item.saleInfo.buyLink + '</li></ul>';
+
+        if(!authors){
+          authors=["Author not listed."];
+        }
+
+        bookResults.push([title, authors, img, metaInfo]);
+      }
+
+      bookResults.sort();
+      var newRow = '</row><row class="columns" id="booksAM">';
+      var bookBox;
+      var toggleBooksAM ="";
+      var toggleBooksNZ ="";
+      var booksAMElement = document.getElementById("booksAM");
+      var booksNZElement = document.getElementById("booksNZ");
+      for(var j = 0; j<bookResults.length; j++){
+        bookBox = '<div class="column is-2"><div class="bookContent">' 
+        + bookResults[j][2]
+        + '<h6 class="bTitle">' + "<br/>" + truncateString(bookResults[j][0], 30) + '</h6>' 
+        + '<h6 class="author">' + truncateArray(bookResults[j][1]) + '</h6></div><div id="metaInfo" class="hide">'
+        + bookResults[j][3] + '</div></div>';
+
+        if (bookResults[j][0].charAt(0).toLowerCase() < 'n'){
+          $("#booksAM").append(bookBox); 
+        }else{
+          $("#booksNZ").append(bookBox);
+        }
+      }
+        for(var t = 6; t < booksAMElement.children.length; t++){
+          var c = document.getElementById("booksAM").children[t];
+          c.classList.add("toggledBooksAM");
+          c.classList.add("hide");
+        }
+       for(var t = 6; t < booksNZElement.children.length; t++){
+          var c = document.getElementById("booksNZ").children[t];
+          c.classList.add("toggledBooksNZ");
+          c.classList.add("hide");
+        }       
+    }
+    
+    $(document).on('click', "div.column.is-2", function(event){
+      var data = $(this).children(0)[1].innerHTML;
+      $(".modal").toggleClass('modal--is-visible');
+      $(".modal__inner")[0].innerHTML = data;
+    });
+
+    function closeModal(){
+      $(".modal__close").click(function(){
+        $(".modal").toggleClass('modal--is-visible');
+      });      
+    }
+
+    document.addEventListener('keydown', keyPressHandler);
+    function keyPressHandler(event){
+      if(event.keyCode == 27 && $("div.modal").hasClass("modal--is-visible")){
+        $(".modal").toggleClass('modal--is-visible');
+      }
+    }
+    closeModal();
+    showMoreBtn();
+    </script>
+    <script src="https://www.googleapis.com/books/v1/volumes?q=tech&startIndex=0&maxResults=30&callback=handleResponse"></script>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>
