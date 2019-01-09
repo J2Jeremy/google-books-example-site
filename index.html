@@ -208,6 +208,12 @@
         var item = response.items[i];
         var title = item.volumeInfo.title;
         var authors = item.volumeInfo.authors;
+        var img;
+        if(item.volumeInfo.imageLinks.smallThumbnail){
+          img = '<img class="bookCover" src="'+item.volumeInfo.imageLinks.smallThumbnail+'" width="80%" height="auto"/>';
+        }else{
+          img = '<img class="bookCover" src="https://via.placeholder.com/150x180" width="80%" height="auto"/>';
+        }
         var img = '<img class="bookCover" src="'+item.volumeInfo.imageLinks.smallThumbnail+'" width="80%" height="auto"/>';
         var desc = item.volumeInfo.description;
         var retailPrice;
